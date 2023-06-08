@@ -47,6 +47,15 @@ export SPOTIPY_REDIRECT_URI='your-app-redirect-url'
 
 ```
 
+# Installing requirements : 
+
+Open cmd in the same directory as requirements.txt and type 
+<br>
+
+```
+pip install -r requirements.txt
+```
+
 # How to get your Discord Token
 
 Watch this tutorial : 
