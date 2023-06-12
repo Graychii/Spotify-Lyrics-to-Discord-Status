@@ -100,7 +100,7 @@ while True :
 						current_top = int(lyrics['lines'][i + 1]['startTimeMs'])
 						current_bottom = int(lyrics['lines'][i]['startTimeMs'])
 
-						# patch(url_discord, json={'custom_status':{'text': f'{random.choice(discord_emojis)} {curr_lyrics} {random.choice(discord_emojis)}','expires_at': None}},headers=headers_discord)
+						patch(url_discord, json={'custom_status':{'text': f'{random.choice(discord_emojis)} {curr_lyrics} {random.choice(discord_emojis)}','expires_at': None}},headers=headers_discord)
 
 			if current_time < current_bottom or current_time > current_top:
 				previous_time = 0
