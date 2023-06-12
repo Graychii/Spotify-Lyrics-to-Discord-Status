@@ -8,7 +8,7 @@ import emoji
 import time
 import random
 # Your discord token
-discord_token = 'MzgzNzM1NDkxMDc1NTA2MTc4.GgaygM.ZOup_LQevncn1TN4_QXUNlClx4-GETwgKQ7ZPE'
+discord_token = ''
 
 #Censored words
 censored_words = (open('censored_words.txt').read()).split(',')
