@@ -3,7 +3,8 @@ Takes current spotify song playing and display it's lyrics into User Discord acc
 <br>
 <br>
 
-![its working](https://github.com/NassimMansouri/Spotify-Lyrics-to-Discord-Status/assets/123596322/8bca977e-b528-4c27-ac7f-5b52f6907d42)
+![it![2024-06-2804-31-27-ezgif com-video-to-gif-converter](https://github.com/Graychii/Spotify-Lyrics-to-Discord-Status/assets/123596322/f1703596-c281-4e12-a799-cce7df02289f)
+
 
 <br>
 <br>
