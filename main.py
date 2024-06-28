@@ -15,7 +15,7 @@ censored_words = (open('censored_words.txt').read()).split(',')
 censor = False
 
 
-
+Caching = False
 
 
 
@@ -62,17 +62,33 @@ results = sp.currently_playing()
 print(results['item']['name'])
 curr_track_id = results['item']['id']
 def get_lyrics(track_id):
-	try : 
-		lyrics = get(f"https://spotify-lyric-api.herokuapp.com/?trackid={track_id}").content
-		if lyrics.decode() != error_message : 
-			lyrics = json.loads(lyrics)
-			while lyrics['error'] :
-				lyrics = get(f"https://spotify-lyric-api.herokuapp.com/?trackid={track_id}").content
+
+	# ---------------- Caching
+	# all_items = os.listdir(folder_path)
+	# files = [f for f in all_items if os.path.isfile(os.path.join(folder_path, f))]
+	if Caching:
+		print('h')
+		# cache_path = f'Caching/{track_id}'
+		# with open(cache_path, 'r') as json_file:
+			# data = json.load(json_file)
+		# return(data)
+	else:
+		try : 
+
+			lyrics = get(f"https://lyrix.vercel.app/getLyrics/{track_id}").content
+			if lyrics.decode() != error_message : 
 				lyrics = json.loads(lyrics)
-			return lyrics
-	except : 
-		print('connection lost ')
-		return ' '
+				# subfolder_path = 'Caching'
+				# file_path = os.path.join(subfolder_path, track_id)
+				# with open(file_path, 'w') as file:
+					# json.dump(lyrics, file)
+				# print('Added to cache')
+
+
+				return lyrics
+		except : 
+			print('connection lost 1 ')
+			return ' '
 lyrics = get_lyrics(curr_track_id)
 previous_time = 0
 current_top = 0 
@@ -85,7 +101,7 @@ while True :
 			results = sp.currently_playing()
 			current_time = int(results['progress_ms'])
 			if results['timestamp'] > 0 :
-				lyrics = get_lyrics(results['item']['id'])
+				lyrics = get_lyrics(results['item']['id'])['lyrics']
 
 			if lyrics != ' ' : 
 				for i in range(len(lyrics['lines']) - 1):
@@ -105,7 +121,7 @@ while True :
 			if current_time < current_bottom or current_time > current_top:
 				previous_time = 0
 		except : 
-			print('connection lost')
+			print('connection lost 2')
 
 
 	time.sleep(1)
@@ -116,5 +132,6 @@ while True :
 			if censor : 
 				lyrics = check_for_censorship(lyrics)
 	except : 
-		print('Connection lost')
+		print('Connection lost 3')
+
 
