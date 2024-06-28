@@ -15,7 +15,8 @@ censored_words = (open('censored_words.txt').read()).split(',')
 censor = False
 
 
-Caching = False
+Caching = True
+folder_path = 'Caching'
 
 
 
@@ -64,25 +65,24 @@ curr_track_id = results['item']['id']
 def get_lyrics(track_id):
 
 	# ---------------- Caching
-	# all_items = os.listdir(folder_path)
-	# files = [f for f in all_items if os.path.isfile(os.path.join(folder_path, f))]
-	if Caching:
-		print('h')
-		# cache_path = f'Caching/{track_id}'
-		# with open(cache_path, 'r') as json_file:
-			# data = json.load(json_file)
-		# return(data)
+	all_items = os.listdir(folder_path)
+	files = [f for f in all_items if os.path.isfile(os.path.join(folder_path, f))]
+	if track_id in files and Caching:
+		cache_path = f'Caching/{track_id}'
+		with open(cache_path, 'r') as json_file:
+			data = json.load(json_file)
+		return(data)
 	else:
 		try : 
 
 			lyrics = get(f"https://lyrix.vercel.app/getLyrics/{track_id}").content
 			if lyrics.decode() != error_message : 
 				lyrics = json.loads(lyrics)
-				# subfolder_path = 'Caching'
-				# file_path = os.path.join(subfolder_path, track_id)
-				# with open(file_path, 'w') as file:
-					# json.dump(lyrics, file)
-				# print('Added to cache')
+				subfolder_path = 'Caching'
+				file_path = os.path.join(subfolder_path, track_id)
+				with open(file_path, 'w') as file:
+					json.dump(lyrics, file)
+				print('Added to cache')
 
 
 				return lyrics
@@ -94,34 +94,37 @@ previous_time = 0
 current_top = 0 
 current_bottom = 0
 
-
 while True : 
-	while results['is_playing'] and lyrics != ' ':
-		try :
-			results = sp.currently_playing()
-			current_time = int(results['progress_ms'])
-			if results['timestamp'] > 0 :
-				lyrics = get_lyrics(results['item']['id'])['lyrics']
+	while results is not None:
+		if results['is_playing'] == True and lyrics != ' ':
+			try :
 
-			if lyrics != ' ' : 
-				for i in range(len(lyrics['lines']) - 1):
-					if current_time > int(lyrics['lines'][i]['startTimeMs']) and current_time < int(lyrics['lines'][i + 1]['startTimeMs']) and current_time > previous_time :
-						print(lyrics['lines'][i]['words'])
-						previous_time = int(lyrics['lines'][i + 1]['startTimeMs'])
-						curr_lyrics = emoji.demojize(lyrics['lines'][i]['words'])
-						if censor : 
-							curr_lyrics = check_for_censorship(curr_lyrics)
-							print(curr_lyrics)
+				results = sp.currently_playing()
+				current_time = int(results['progress_ms'])
+				if results['timestamp'] > 0 :
+					lyrics = get_lyrics(results['item']['id'])['lyrics']
 
-						current_top = int(lyrics['lines'][i + 1]['startTimeMs'])
-						current_bottom = int(lyrics['lines'][i]['startTimeMs'])
+				if lyrics != ' ' : 
+					for i in range(len(lyrics['lines']) - 1):
+						if current_time > int(lyrics['lines'][i]['startTimeMs']) and current_time < int(lyrics['lines'][i + 1]['startTimeMs']) and current_time > previous_time :
+							print(lyrics['lines'][i]['words'])
+							previous_time = int(lyrics['lines'][i + 1]['startTimeMs'])
+							curr_lyrics = emoji.demojize(lyrics['lines'][i]['words'])
+							if censor : 
+								curr_lyrics = check_for_censorship(curr_lyrics)
+								print(curr_lyrics)
 
-						patch(url_discord, json={'custom_status':{'text': f'{random.choice(discord_emojis)} {curr_lyrics} {random.choice(discord_emojis)}','expires_at': None}},headers=headers_discord)
+							current_top = int(lyrics['lines'][i + 1]['startTimeMs'])
+							current_bottom = int(lyrics['lines'][i]['startTimeMs'])
 
-			if current_time < current_bottom or current_time > current_top:
-				previous_time = 0
-		except : 
-			print('connection lost 2')
+							patch(url_discord, json={'custom_status':{'text': f'{random.choice(discord_emojis)} {curr_lyrics} {random.choice(discord_emojis)}','expires_at': None}},headers=headers_discord)
+
+				if current_time < current_bottom or current_time > current_top:
+					previous_time = 0
+			except : 
+				print('connection lost 2')
+		else:
+			break
 
 
 	time.sleep(1)
