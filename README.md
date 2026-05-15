@@ -2,11 +2,7 @@
 
 Syncs your currently playing Spotify song — line by line — to your Discord custom status and an on-screen subtitle overlay, in real time.
 
-
-
-![demo](https://github.com/user-attachments/assets/c5618427-f79f-439d-83f6-279505fde565)
-
-
+<video src="https://github.com/user-attachments/assets/20ee87ec-f48d-4a37-b569-ac9a8b2d8f7a" autoplay loop muted playsinline></video>
 
 ---
 
