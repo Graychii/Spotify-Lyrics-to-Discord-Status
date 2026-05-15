@@ -27,10 +27,11 @@ except ImportError:
 # ── Config (all editable in .env) ────────────────────────────────────────────
 DISCORD_TOKEN         = os.getenv('DISCORD_TOKEN', '')
 MOCK_SPOTIFY          = os.getenv('MOCK_SPOTIFY', 'false').lower() == 'true'
+_HERE                 = os.path.dirname(os.path.abspath(__file__))
 CACHING               = True
-CACHE_DIR             = os.getenv('LYRICS_CACHE_DIR', 'Caching')
+CACHE_DIR             = os.getenv('LYRICS_CACHE_DIR', os.path.join(_HERE, 'Caching'))
 os.makedirs(CACHE_DIR, exist_ok=True)
-LYRICS_FILE           = 'lyrics.txt'
+LYRICS_FILE           = os.path.join(_HERE, 'lyrics.txt')
 PROVIDERS             = ['NetEase', 'Lrclib', 'Musixmatch']
 SPOTIFY_POLL_INTERVAL = 2.0
 SEEK_THRESHOLD_MS     = 1500
@@ -57,7 +58,7 @@ MOCK_TRACK = {
 _mock_start = time.time()
 
 try:
-    CENSORED_WORDS = open('censored_words.txt').read().split(',')
+    CENSORED_WORDS = open(os.path.join(_HERE, 'censored_words.txt')).read().split(',')
 except FileNotFoundError:
     CENSORED_WORDS = []
 
@@ -234,7 +235,6 @@ def push_line(line_text: str, now: float) -> None:
             write_lyrics('')
         return
 
-    print(line_text)
     text = emoji.demojize(line_text)
     if ENABLE_CENSOR:
         text = censor_text(text)
@@ -330,6 +330,8 @@ while True:
             timed_out    = (now - state.last_sent_at) * 1000 > RESYNC_AFTER_MS
 
             if line_changed or timed_out:
+                if line_changed:
+                    print(lines[idx]['words'])
                 push_line(lines[idx]['words'], now)
                 state.last_line_idx = idx
 
