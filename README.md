@@ -2,7 +2,11 @@
 
 Syncs your currently playing Spotify song — line by line — to your Discord custom status and an on-screen subtitle overlay, in real time.
 
-![demo](https://github.com/Graychii/Spotify-Lyrics-to-Discord-Status/assets/123596322/f1703596-c281-4e12-a799-cce7df02289f)
+
+
+![demo](https://github.com/user-attachments/assets/c5618427-f79f-439d-83f6-279505fde565)
+
+
 
 ---
 
