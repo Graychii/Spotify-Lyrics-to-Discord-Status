@@ -1,0 +1,29 @@
+# Credentials & secrets
+.env
+.cache
+
+# Lyrics cache (large, user-specific)
+Caching/
+
+# Runtime output
+lyrics.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# Legacy env file
+env
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
