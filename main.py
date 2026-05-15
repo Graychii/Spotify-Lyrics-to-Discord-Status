@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import sys
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
 import syncedlyrics
 import json
 import os
@@ -139,32 +142,36 @@ RETRY_DELAYS = [5, 15, 30]
 def get_lyrics(track_id: str, track_name: str, artist_name: str) -> dict | None:
     cache_path = os.path.join(CACHE_DIR, f'{track_id}.json')
     if CACHING and os.path.exists(cache_path):
+        print(f'Lyrics: loaded from cache')
         with open(cache_path, 'r', encoding='utf-8') as f:
             return json.load(f)
 
+    print(f'Lyrics: fetching from providers {PROVIDERS}...')
     for attempt, delay in enumerate(RETRY_DELAYS, start=1):
         try:
             lrc_text = syncedlyrics.search(f'{track_name} {artist_name}', providers=PROVIDERS, synced_only=True)
             if not lrc_text:
-                print(f'No synced lyrics: {track_name} — {artist_name}')
+                print(f'Lyrics: no synced lyrics found')
                 return None
 
             lines = parse_lrc(lrc_text)
             lines = [ln for ln in lines if ln['startTimeMs'] > 3000 or _is_ascii(ln['words'])]
             data  = {'lines': lines}
+            print(f'Lyrics: found ({len(lines)} lines)')
 
             if CACHING:
                 with open(cache_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, ensure_ascii=False, indent=2)
-                print('Cached.')
+                print(f'Lyrics: cached to disk')
 
             return data
         except Exception as e:
-            print(f'Lyrics error (attempt {attempt}/{len(RETRY_DELAYS)}): {e}')
+            print(f'Lyrics: error on attempt {attempt}/{len(RETRY_DELAYS)}: {e}')
             if attempt < len(RETRY_DELAYS):
-                print(f'Retrying in {delay}s...')
+                print(f'Lyrics: retrying in {delay}s...')
                 time.sleep(delay)
 
+    print('Lyrics: all attempts failed')
     return None
 
 # ── Spotify ───────────────────────────────────────────────────────────────────
@@ -202,14 +209,16 @@ def set_discord_status(text: str) -> None:
         if seq != _discord_seq:
             return  # a newer update was queued — drop this one
         try:
-            patch(
+            r = patch(
                 'https://discordapp.com/api/v6/users/@me/settings',
                 json={'custom_status': {'text': status_text, 'expires_at': None}},
                 headers=_discord_headers,
                 timeout=5,
             )
+            if r.status_code != 200:
+                print(f'Discord: unexpected status {r.status_code} — {r.text[:120]}')
         except Exception as ex:
-            print(f'Discord error: {ex}')
+            print(f'Discord: error — {ex}')
 
     threading.Thread(target=_send, daemon=True).start()
 
@@ -248,6 +257,7 @@ def push_line(line_text: str, now: float) -> None:
     state.last_sent_at = now
 
 # ── Init ──────────────────────────────────────────────────────────────────────
+
 if not MOCK_SPOTIFY:
     if not SPOTIPY_AVAILABLE:
         raise RuntimeError('spotipy is not installed — run: pip install spotipy')
@@ -275,6 +285,7 @@ while True:
                 clock.update(0, False)
                 if ENABLE_OVERLAY:
                     write_lyrics('')
+                print('Spotify: nothing playing')
                 time.sleep(2)
                 continue
 
@@ -282,6 +293,7 @@ while True:
 
             # Detect seek — reset so the correct line fires immediately
             if abs(new_progress - clock.current_ms) > SEEK_THRESHOLD_MS:
+                print(f'Spotify: seek detected — resyncing')
                 state.last_line_idx = -1
                 state.last_sent_at  = 0.0
 

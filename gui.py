@@ -45,7 +45,9 @@ def start_app():
     stop_app()
     if env_bool('ENABLE_OVERLAY'):
         _procs.append(subprocess.Popen([sys.executable, 'display.py', str(_bar_y)]))
-    _procs.append(subprocess.Popen([sys.executable, 'main.py']))
+    _procs.append(subprocess.Popen(
+        [sys.executable, 'main.py'],
+        creationflags=subprocess.CREATE_NEW_CONSOLE))
     status_dot.configure(text_color='#1DB954')
     status_text.configure(text='running')
     start_btn.configure(state='disabled', fg_color='#1a3a26')
@@ -190,6 +192,30 @@ def float_slider_row(parent, label: str, env_key: str,
     sl.set(env_float(env_key, default))
     sl.pack(fill='x', pady=(4, 0))
 
+FONT_OPTIONS = [
+    'Courier Prime',                                          # Google Font (auto-downloaded)
+    'Helvetica', 'Arial', 'Verdana', 'Tahoma', 'Trebuchet MS',
+    'Segoe UI', 'Calibri', 'Georgia', 'Times New Roman',
+    'Impact', 'Comic Sans MS', 'Consolas', 'Courier New',
+]
+
+def font_row(parent, label: str, env_key: str, default: str):
+    frame = ctk.CTkFrame(parent, fg_color='transparent', height=38)
+    frame.pack(fill='x', padx=PAD_X, pady=2)
+    frame.pack_propagate(False)
+
+    ctk.CTkLabel(frame, text=label,
+                 font=ctk.CTkFont(size=13)).pack(side='left', pady=8)
+
+    combo = ctk.CTkComboBox(frame, values=FONT_OPTIONS, width=160,
+                             fg_color='#1a1a1a', border_color='#333',
+                             button_color='#333', button_hover_color='#444',
+                             dropdown_fg_color='#1a1a1a',
+                             font=ctk.CTkFont(size=12),
+                             command=lambda v: save(env_key, v))
+    combo.set(os.getenv(env_key, default))
+    combo.pack(side='right', pady=8)
+
 def segment_row(parent, label: str, env_key: str, options: list, default: str):
     frame = ctk.CTkFrame(parent, fg_color='transparent', height=40)
     frame.pack(fill='x', padx=PAD_X, pady=2)
@@ -274,6 +300,7 @@ rule(body)
 # Subtitle style
 section_title(body, 'SUBTITLE')
 color_row(body,    'Text Color',  'SUBTITLE_COLOR',  '#ffffff', TEXT_PRESETS)
+font_row(body,     'Font',        'SUBTITLE_FONT',   'Helvetica')
 slider_row(body,   'Font Size',   'SUBTITLE_SIZE',   14, 40, 25,
            fmt=lambda v: f'{int(v)}px', step=1)
 segment_row(body,  'Effect',      'SUBTITLE_EFFECT', ['None', 'Shadow', 'Outline'], 'none')

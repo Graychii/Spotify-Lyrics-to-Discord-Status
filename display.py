@@ -13,6 +13,12 @@ except ImportError:
 
 windll.shcore.SetProcessDpiAwareness(1)
 
+try:
+    from fonts import ensure_font, GOOGLE_FONTS
+except ImportError:
+    GOOGLE_FONTS = {}
+    def ensure_font(_): return False
+
 RAINBOW    = os.getenv('ENABLE_RAINBOW',         'false').lower() == 'true'
 TEXT_COLOR = os.getenv('SUBTITLE_COLOR',         '#ffffff')
 BG_COLOR   = os.getenv('SUBTITLE_BG',            '#000000')
@@ -20,10 +26,14 @@ BG_TRANSP  = os.getenv('SUBTITLE_BG_TRANSPARENT','false').lower() == 'true'
 ALPHA      = float(os.getenv('SUBTITLE_ALPHA',   '0.8'))
 SIZE       = int(os.getenv('SUBTITLE_SIZE',      '25'))
 EFFECT     = os.getenv('SUBTITLE_EFFECT',        'none').lower()
+FONT_NAME  = os.getenv('SUBTITLE_FONT',          'Helvetica')
+
+if FONT_NAME in GOOGLE_FONTS:
+    ensure_font(FONT_NAME)
 
 TRANSP_KEY = 'grey'
 OVERLAY_H  = max(54, SIZE * 2 + 20)
-FONT_T     = ('Helvetica', SIZE, 'bold')
+FONT_T     = (FONT_NAME, SIZE, 'bold')
 PAD_X      = 28
 
 root = Tk()
@@ -31,6 +41,7 @@ screen_w = root.winfo_screenwidth()
 screen_h = root.winfo_screenheight()
 
 OVERLAY_Y = int(sys.argv[1]) if len(sys.argv) > 1 else screen_h - 120
+OVERLAY_Y = max(0, min(screen_h - OVERLAY_H, OVERLAY_Y))
 
 root.wm_attributes('-topmost', 1)
 root.overrideredirect(True)
@@ -46,7 +57,7 @@ cv.pack(fill='both', expand=True)
 
 root.bind('<Escape>', lambda e: root.destroy())
 
-_tk_font = tkfont.Font(family='Helvetica', size=SIZE, weight='bold')
+_tk_font = tkfont.Font(family=FONT_NAME, size=SIZE, weight='bold')
 _hue     = 0.0
 _last    = None
 
